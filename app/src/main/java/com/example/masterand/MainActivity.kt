@@ -64,13 +64,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenInitial() {
     val profileImageUri: MutableState<Uri?> = rememberSaveable { mutableStateOf(null) }
     val name = rememberSaveable { mutableStateOf("") }
+    val nameValidation = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
+    val emailValidation = rememberSaveable { mutableStateOf("")}
     val colors = rememberSaveable { mutableStateOf("") }
+    val colorsValidation = rememberSaveable {mutableStateOf("")}
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { selectedUri: Uri? ->
@@ -81,6 +85,39 @@ fun ProfileScreenInitial() {
             }
         }
     )
+    fun validateName () {
+        if (name.value.isEmpty()) {
+            nameValidation.value = "Name can't be empty"
+        } else if (!name.value.matches(Regex("^[a-zA-Z ,.'-]+\$"))) {
+            nameValidation.value = "Name is not valid"
+        }
+        else{
+            nameValidation.value = ""
+        }
+    }
+
+    fun validateEmail () {
+        if (email.value.isEmpty()) {
+            emailValidation.value = "Email can't be empty"
+        } else if (!email.value.matches(Regex("^[a-zA-Z ,.'-]+\$"))) {
+            emailValidation.value = "Email is not valid"
+        }
+        else{
+            emailValidation.value = ""
+        }
+    }
+
+    fun validateColors () {
+        if (colors.value.isEmpty()) {
+            colorsValidation.value = "Colors can't be empty"
+        } else if (!colors.value.matches(Regex("^[a-zA-Z ,.'-]+\$"))) {
+            colorsValidation.value = "Colors are not valid"
+        }
+        else{
+            colorsValidation.value = ""
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -114,7 +151,7 @@ fun ProfileScreenInitial() {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
 
-                )
+                    )
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.baseline_question_mark_24),
@@ -128,84 +165,70 @@ fun ProfileScreenInitial() {
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        if (name.value.isEmpty()) {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = name.value,
-                onValueChange = { name.value = it },
-                label = { Text(" Enter name") },
-                singleLine = true,
-                isError = false,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                supportingText = { Text("Name can't be empty") }
-            )
-        }
-        else{
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = name.value,
-                onValueChange = { name.value = it },
-                label = { Text(" Enter name") },
-                singleLine = true,
-                isError = false,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        if (email.value.isEmpty()) {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = email.value,
-                onValueChange = { email.value = it },
-                label = { Text(" Enter email") },
-                singleLine = true,
-                isError = false,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                supportingText = { Text("Email can't be empty") }
-            )
-        }
-        else{
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = email.value,
-                onValueChange = { email.value = it },
-                label = { Text(" Enter email") },
-                singleLine = true,
-                isError = false,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        if (colors.value.isEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = colors.value,
-                onValueChange = { name.value = it },
-                label = { Text(" Enter number of colors") },
-                singleLine = true,
-                isError = false,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                supportingText = { Text("Colors can't be empty") }
-            )
-        }
-        else{
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = colors.value,
-                onValueChange = { name.value = it },
-                label = { Text(" Enter number of colors") },
-                singleLine = true,
-                isError = false,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = { /*TODO*/ }) {
-            Text("Next",modifier = Modifier.padding(start = 150.dp, end = 150.dp))
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = name.value,
+            onValueChange = { name.value = it; validateName() },
+            label = { Text(" Enter name") },
+            singleLine = true,
+            isError = false,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            supportingText = { Text(nameValidation.value) }
+        )
 
-        }
+    Spacer(modifier = Modifier.height(16.dp))
+    if (email.value.isEmpty()) {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = email.value,
+            onValueChange = { email.value = it },
+            label = { Text(" Enter email") },
+            singleLine = true,
+            isError = false,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            supportingText = { Text("Email can't be empty") }
+        )
+    } else {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = email.value,
+            onValueChange = { email.value = it },
+            label = { Text(" Enter email") },
+            singleLine = true,
+            isError = false,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+        )
     }
+    Spacer(modifier = Modifier.height(16.dp))
+    if (colors.value.isEmpty()) {
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = colors.value,
+            onValueChange = { name.value = it },
+            label = { Text(" Enter number of colors") },
+            singleLine = true,
+            isError = false,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            supportingText = { Text("Colors can't be empty") }
+        )
+    } else {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = colors.value,
+            onValueChange = { name.value = it },
+            label = { Text(" Enter number of colors") },
+            singleLine = true,
+            isError = false,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+        )
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+    Button(onClick = { /*TODO*/ }) {
+        Text("Next", modifier = Modifier.padding(start = 150.dp, end = 150.dp))
+
+    }
+}
 }
 @Preview
 @Composable
