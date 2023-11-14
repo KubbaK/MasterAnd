@@ -1,5 +1,6 @@
 package com.example.masterand
 
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,8 +23,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -41,6 +45,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.masterand.R
@@ -75,6 +80,7 @@ fun ProfileScreenInitial() {
     val emailValidation = rememberSaveable { mutableStateOf("")}
     val colors = rememberSaveable { mutableStateOf("") }
     val colorsValidation = rememberSaveable {mutableStateOf("")}
+    var appStarted = rememberSaveable {mutableStateOf(true)}
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { selectedUri: Uri? ->
@@ -88,6 +94,7 @@ fun ProfileScreenInitial() {
     fun validateName () {
         if (name.value.isEmpty()) {
             nameValidation.value = "Name can't be empty"
+
         } else if (!name.value.matches(Regex("^[a-zA-Z ,.'-]+\$"))) {
             nameValidation.value = "Name is not valid"
         }
@@ -99,7 +106,7 @@ fun ProfileScreenInitial() {
     fun validateEmail () {
         if (email.value.isEmpty()) {
             emailValidation.value = "Email can't be empty"
-        } else if (!email.value.matches(Regex("^[a-zA-Z ,.'-]+\$"))) {
+        } else if (!email.value.matches(Regex("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$"))) {
             emailValidation.value = "Email is not valid"
         }
         else{
@@ -109,13 +116,22 @@ fun ProfileScreenInitial() {
 
     fun validateColors () {
         if (colors.value.isEmpty()) {
-            colorsValidation.value = "Colors can't be empty"
-        } else if (!colors.value.matches(Regex("^[a-zA-Z ,.'-]+\$"))) {
-            colorsValidation.value = "Colors are not valid"
+            colorsValidation.value = "Number of colors can't be empty"
+        } else if (!colors.value.isDigitsOnly()) {
+            colorsValidation.value = "Number of colors has to be a number "
+        } else if (!(Integer.parseInt(colors.value) in 5..10)) {
+            colorsValidation.value = "Number of colors has to be between 5 to 10"
         }
         else{
             colorsValidation.value = ""
         }
+    }
+
+    fun isValid(): Boolean {
+        if (nameValidation.value.isEmpty() && emailValidation.value.isEmpty() && colorsValidation.value.isEmpty() && !appStarted.value){
+            return true
+        }
+        return false
     }
 
     Column(
@@ -168,63 +184,55 @@ fun ProfileScreenInitial() {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = name.value,
-            onValueChange = { name.value = it; validateName() },
+            onValueChange = { name.value = it; validateName(); appStarted.value = false },
             label = { Text(" Enter name") },
             singleLine = true,
-            isError = false,
+            isError = nameValidation.value.isNotEmpty(),
+            trailingIcon = {
+                if (nameValidation.value.isNotEmpty()){
+                    Icon(imageVector = Icons.Filled.Error, contentDescription = "Colors error")
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             supportingText = { Text(nameValidation.value) }
         )
 
-    Spacer(modifier = Modifier.height(16.dp))
-    if (email.value.isEmpty()) {
+        Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = email.value,
-            onValueChange = { email.value = it },
+            onValueChange = { email.value = it; validateEmail(); appStarted.value = false },
             label = { Text(" Enter email") },
             singleLine = true,
-            isError = false,
+            isError = emailValidation.value.isNotEmpty(),
+            trailingIcon = {
+                if (emailValidation.value.isNotEmpty()){
+                    Icon(imageVector = Icons.Filled.Error, contentDescription = "Colors error")
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            supportingText = { Text("Email can't be empty") }
+            supportingText = { Text(emailValidation.value) }
         )
-    } else {
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = email.value,
-            onValueChange = { email.value = it },
-            label = { Text(" Enter email") },
-            singleLine = true,
-            isError = false,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-        )
-    }
-    Spacer(modifier = Modifier.height(16.dp))
-    if (colors.value.isEmpty()) {
+
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = colors.value,
-            onValueChange = { name.value = it },
+            onValueChange = { colors.value = it; validateColors(); appStarted.value = false },
             label = { Text(" Enter number of colors") },
             singleLine = true,
-            isError = false,
+            isError = colorsValidation.value.isNotEmpty(),
+            trailingIcon = {
+                if (colorsValidation.value.isNotEmpty()){
+                    Icon(imageVector = Icons.Filled.Error, contentDescription = "Colors error")
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            supportingText = { Text("Colors can't be empty") }
+            supportingText = { Text(colorsValidation.value)}
         )
-    } else {
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = colors.value,
-            onValueChange = { name.value = it },
-            label = { Text(" Enter number of colors") },
-            singleLine = true,
-            isError = false,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-        )
-    }
+
     Spacer(modifier = Modifier.height(20.dp))
-    Button(onClick = { /*TODO*/ }) {
+    Button(enabled = isValid()  ,onClick = { /*TODO*/ }) {
         Text("Next", modifier = Modifier.padding(start = 150.dp, end = 150.dp))
 
     }
